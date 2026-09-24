@@ -20,11 +20,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .cors(Customizer.withDefaults()) // 1. Activa la integración de CORS en Spring Security
+            .cors(Customizer.withDefaults()) // Activa la integración de CORS
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // 2. Permite las peticiones preflight (OPTIONS)
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll() // Peticiones preflight
                 .requestMatchers("/ms5/api/analytics/health").permitAll()
+
+                // PERMITIR ACCESO PÚBLICO A SWAGGER Y OPENAPI
+                .requestMatchers(
+                    "/ms5/api/analytics/swagger-ui.html",
+                    "/ms5/api/analytics/swagger-ui/**",
+                    "/ms5/api/analytics/docs/**",
+                    "/v3/api-docs/**"
+                ).permitAll()
+
                 .anyRequest().authenticated()
             )
             .httpBasic(Customizer.withDefaults());
@@ -32,12 +41,11 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // 3. Configura los orígenes, métodos y cabeceras permitidos para CORS
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of("*"));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 
